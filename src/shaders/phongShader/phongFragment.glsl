@@ -41,7 +41,7 @@ highp float rand_2to1(vec2 uv ) {
 }
 
 float unpack(vec4 rgbaDepth) {
-    const vec4 bitShift = vec4(1.0, 1.0/256.0, 1.0/(256.0*256.0), 1.0/(256.0*256.0*256.0));
+    const vec4 bitShift = vec4(1.0, 1.0/255.0, 1.0/(255.0*255.0), 1.0/(255.0*255.0*255.0));
     return dot(rgbaDepth, bitShift);
 }
 
