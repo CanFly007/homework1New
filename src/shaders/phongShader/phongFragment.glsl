@@ -88,7 +88,31 @@ float findBlocker( sampler2D shadowMap,  vec2 uv, float zReceiver ) {
 }
 
 float PCF(sampler2D shadowMap, vec4 coords) {
-  return 1.0;
+  
+  uniformDiskSamples(coords.xy);
+  //poissonDiskSamples(coords.xy);
+
+  // shadow map 的大小, 越大滤波的范围越小
+  float textureSize = 2048.0;
+  // 滤波的步长
+  float filterStride = 5.0;
+  // 滤波窗口的范围
+  float filterRange = 1.0 / textureSize * filterStride;
+
+  int noInShadow = 0;
+  for(int i = 0; i < 20; i++)
+  {
+    vec2 sampleCoord = poissonDisk[i] * filterRange + coords.xy;
+    vec4 rgbaDepth = texture2D(shadowMap, sampleCoord);
+    float shadowmapDepth = unpack(rgbaDepth);
+
+    if(coords.z < shadowmapDepth + 0.01)
+    {
+      noInShadow += 1;
+    }
+  }
+  float shadow = float(noInShadow) / 20.0;//如果完全不在阴影中，noInShadow为20
+  return shadow;
 }
 
 float PCSS(sampler2D shadowMap, vec4 coords){
@@ -145,8 +169,8 @@ void main(void) {
   //深度纹理的z也是NDC变到[0,1] 即d = 0.5*Zndc+0.5 
 
   float visibility;
-  visibility = useShadowMap(uShadowMap, vec4(shadowCoord, 1.0));
-  //visibility = PCF(uShadowMap, vec4(shadowCoord, 1.0));
+  //visibility = useShadowMap(uShadowMap, vec4(shadowCoord, 1.0));
+  visibility = PCF(uShadowMap, vec4(shadowCoord, 1.0));
   //visibility = PCSS(uShadowMap, vec4(shadowCoord, 1.0));
 
   vec3 phongColor = blinnPhong();
