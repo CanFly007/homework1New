@@ -48,6 +48,10 @@ class WebGLRenderer {
                 this.gl.uniform3fv(this.meshes[i].shader.program.uniforms.uLightPos, this.lights[l].entity.lightPos);
                 this.meshes[i].draw(this.camera);
             }
+
+            // for (let i = 0; i < this.shadowMeshes.length; i++) {
+            //     this.shadowMeshes[i].draw(this.camera);
+            // }
         }
     }
 }
