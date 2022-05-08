@@ -142,6 +142,7 @@ void main(void) {
 
   //shadowCoord = (shadowCoord + 1.0) / 2.0; //两者等价，可以把除以2从括号里一一相除
   shadowCoord = (shadowCoord * 0.5) + 0.5; //这一步不是变到width，而是变到uv坐标，即：[-1,1]->[0,1]
+  //深度纹理的z也是NDC变到[0,1] 即d = 0.5*Zndc+0.5 
 
   float visibility;
   visibility = useShadowMap(uShadowMap, vec4(shadowCoord, 1.0));
