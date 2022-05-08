@@ -105,7 +105,10 @@ float PCSS(sampler2D shadowMap, vec4 coords){
 
 
 float useShadowMap(sampler2D shadowMap, vec4 shadowCoord){
-  return 1.0;
+  vec4 rgbaDepth = texture2D(shadowMap,shadowCoord.xy);
+  float shadowmapDepth = unpack(rgbaDepth);
+  float notInShadow = (shadowmapDepth + 0.01) > shadowCoord.z ? 1.0 : 0.0;
+  return notInShadow;
 }
 
 vec3 blinnPhong() {
@@ -133,13 +136,20 @@ vec3 blinnPhong() {
 
 void main(void) {
 
+  vec3 shadowCoord = vec3(0,0,0);//三维中的点投影到uShadowMap上，xy查找的值和z值比较
+  //因为在shadowVertex.glsl中gl_Position也只算到裁剪空间，但是幕后完成了透视除法和视口变换，这里要自己手动完成这两步骤
+  shadowCoord = vPositionFromLight.xyz / vPositionFromLight.w;
+
+  //shadowCoord = (shadowCoord + 1.0) / 2.0; //两者等价，可以把除以2从括号里一一相除
+  shadowCoord = (shadowCoord * 0.5) + 0.5; //这一步不是变到width，而是变到uv坐标，即：[-1,1]->[0,1]
+
   float visibility;
-  //visibility = useShadowMap(uShadowMap, vec4(shadowCoord, 1.0));
+  visibility = useShadowMap(uShadowMap, vec4(shadowCoord, 1.0));
   //visibility = PCF(uShadowMap, vec4(shadowCoord, 1.0));
   //visibility = PCSS(uShadowMap, vec4(shadowCoord, 1.0));
 
   vec3 phongColor = blinnPhong();
 
-  //gl_FragColor = vec4(phongColor * visibility, 1.0);
-  gl_FragColor = vec4(phongColor, 1.0);
+  gl_FragColor = vec4(phongColor * visibility, 1.0);
+  //gl_FragColor = vec4(phongColor, 1.0);
 }

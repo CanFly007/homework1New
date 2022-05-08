@@ -48,15 +48,27 @@ class DirectionalLight {
         viewMatrix = this.MatMultiplyMat(rotationMat, translation);
 
         // Projection transform
-        console.log("------------------");
-        console.log(viewMatrix);
-        console.log("+++++++++++++++++++")
         //正交投影，投影的参数决定了shadow map所覆盖的范围
-        
+        //右手坐标系viewSpace到左手坐标系NDC
+        //XY轴因为本来就是对称的（即有正负），所以可以看成压扁即可
+        //Z轴不仅要压扁，还要平移到原点位置
+        // -Near    -Far
+        // -1       1
+        var size = 100;// half of height 这几个都是正交摄像机自己定义的参数
+        var aspect = 1.7778;
+        var near = 0.01;
+        var far = 200;
+
+        var height = size*2;
+        var width = height * aspect;
+        projectionMatrix[0] = 2/width; //width/2对应NDC中的1，那么viewX对应NDC中的位置即：viewX/(width/2)=(2/width)*viewX;
+        projectionMatrix[5] = 2/height;
+        projectionMatrix[10] = 2/(near-far);//自己在笔记本上按上面z的注释画一下
+        projectionMatrix[14] = (near+far)/(near-far);
 
         mat4.multiply(lightMVP, projectionMatrix, viewMatrix);
         mat4.multiply(lightMVP, lightMVP, modelMatrix);
-
+        //console.log(lightMVP);
         return lightMVP;
     }
 
